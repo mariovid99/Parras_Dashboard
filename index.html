@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Diagnóstico Digital - Parras</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  </head>
+  <body>
+    <!-- Canvas de fondo para partículas animadas -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo-section">
+        <img src="aetherix-logo.png" alt="Aetherix" class="logo-img" />
+      </div>
+
+      <nav class="nav-menu">
+        <a href="#" class="nav-item active" data-section="overview">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Vista General</span>
+        </a>
+        <a href="#" class="nav-item" data-section="visibility">
+          <span class="nav-icon">🔍</span>
+          <span class="nav-text">Visibilidad Digital</span>
+        </a>
+        <a href="#" class="nav-item" data-section="insights">
+          <span class="nav-icon">💡</span>
+          <span class="nav-text">Insights Clave</span>
+        </a>
+        <a href="#" class="nav-item" data-section="details">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">Detalle por Negocio</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p class="footer-text">Datos actualizados en tiempo real</p>
+        <div class="data-badge">
+          <span class="badge-dot"></span>
+          <span id="total-responses">0 respuestas</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="dashboard-header">
+        <div class="header-title-section">
+          <h2 class="page-title">Dashboard Ejecutivo</h2>
+          <div class="live-indicator">
+            <span class="live-dot"></span>
+            <span class="live-text">EN VIVO</span>
+          </div>
+        </div>
+        <div class="header-upload">
+          <label for="csv-upload" class="upload-btn">
+            <span class="upload-icon">📁</span>
+            <span>Cargar CSV</span>
+            <input
+              type="file"
+              id="csv-upload"
+              accept=".csv"
+              style="display: none"
+            />
+          </label>
+        </div>
+      </header>
+
+      <!-- Zona de Filtros (Sticky) -->
+      <section class="filters-section">
+        <div class="filters-card">
+          <h3 class="filters-title">Filtros de Análisis</h3>
+          <div class="filters-grid">
+            <div class="filter-group">
+              <label for="filter-type">Tipo de Negocio</label>
+              <select id="filter-type" class="filter-select" multiple>
+                <option value="all" selected>Todos</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filter-size">Tamaño del Negocio</label>
+              <select id="filter-size" class="filter-select" multiple>
+                <option value="all" selected>Todos</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filter-role">Rol del Respondente</label>
+              <select id="filter-role" class="filter-select" multiple>
+                <option value="all" selected>Todos</option>
+              </select>
+            </div>
+            <div class="filter-actions">
+              <button id="apply-filters" class="btn-primary">
+                Aplicar Filtros
+              </button>
+              <button id="reset-filters" class="btn-secondary">Resetear</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOQUE 1: Vista General (Diagnóstico Rápido) -->
+      <section id="overview-section" class="dashboard-section">
+        <h3 class="section-title">Vista General - Diagnóstico Rápido</h3>
+
+        <!-- Barras Comparativas -->
+        <div class="charts-row">
+          <div class="chart-card">
+            <h4 class="chart-title">
+              Nivel de Digitalización por Tipo de Negocio
+            </h4>
+            <canvas id="chart-digitalization"></canvas>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title">Uso de Tecnología por Sector</h4>
+            <canvas id="chart-technology"></canvas>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <h4 class="chart-title">Control de Procesos por Tamaño</h4>
+            <canvas id="chart-processes"></canvas>
+          </div>
+          <div class="chart-card chart-card-large">
+            <h4 class="chart-title">
+              Tabla Resumen - Score Global por Tipo de Negocio
+            </h4>
+            <div id="summary-table" class="summary-table-container"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOQUE 2: Visibilidad y Posicionamiento Digital -->
+      <section id="visibility-section" class="dashboard-section">
+        <h3 class="section-title">Visibilidad y Posicionamiento Digital</h3>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <h4 class="chart-title">¿Cómo Llegan los Clientes?</h4>
+            <canvas id="chart-client-origin"></canvas>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title">Preparación para Búsquedas Digitales</h4>
+            <canvas id="chart-digital-readiness"></canvas>
+          </div>
+        </div>
+
+        <div class="message-card">
+          <div class="message-icon">🎯</div>
+          <p id="visibility-message" class="message-text">
+            La región depende fuertemente de la recomendación boca a boca, con
+            una gran oportunidad de posicionamiento digital conjunto.
+          </p>
+        </div>
+      </section>
+
+      <!-- BLOQUE 3: Insights Accionables -->
+      <section id="insights-section" class="dashboard-section">
+        <h3 class="section-title">Insights Accionables</h3>
+
+        <div class="insights-grid" id="insights-container">
+          <!-- Los insights se generarán dinámicamente -->
+        </div>
+      </section>
+
+      <!-- BLOQUE 4: Detalle por Negocio -->
+      <section id="details-section" class="dashboard-section">
+        <h3 class="section-title">Detalle Individual por Negocio</h3>
+
+        <div id="business-cards-container" class="business-cards-grid">
+          <!-- Las tarjetas de negocios se generarán dinámicamente -->
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
