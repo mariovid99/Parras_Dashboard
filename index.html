@@ -3,17 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard Diagnóstico Digital - Parras</title>
-    <link rel="stylesheet" href="styles.css" />
+    <title>Dashboard Diagnóstico Digital - Análisis Ejecutivo</title>
+    <link rel="stylesheet" href="styles2.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Módulos de datos -->
+    <script src="columnas.js"></script>
+    <script src="encuesta_opciones.js"></script>
+    <script src="data-engine.js"></script>
+    <script src="visualization-helpers.js"></script>
   </head>
   <body>
-    <!-- Canvas de fondo para partículas animadas -->
+    <!-- Canvas de partículas -->
     <canvas id="particles-canvas"></canvas>
 
     <!-- Sidebar -->
@@ -23,29 +28,32 @@
       </div>
 
       <nav class="nav-menu">
-        <a href="#" class="nav-item active" data-section="overview">
+        <a href="#" class="nav-item active" data-tab="panorama">
           <span class="nav-icon">📊</span>
-          <span class="nav-text">Vista General</span>
+          <span class="nav-text">Panorama General</span>
         </a>
-        <a href="#" class="nav-item" data-section="visibility">
-          <span class="nav-icon">🔍</span>
-          <span class="nav-text">Visibilidad Digital</span>
+        <a href="#" class="nav-item" data-tab="operacion">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">Operación y Dolor</span>
         </a>
-        <a href="#" class="nav-item" data-section="insights">
+        <a href="#" class="nav-item" data-tab="tecnologia">
+          <span class="nav-icon">🚀</span>
+          <span class="nav-text">Tecnología y Adopción</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="decisiones">
           <span class="nav-icon">💡</span>
-          <span class="nav-text">Insights Clave</span>
+          <span class="nav-text">Decisiones y Datos</span>
         </a>
-        <a href="#" class="nav-item" data-section="details">
-          <span class="nav-icon">📋</span>
-          <span class="nav-text">Detalle por Negocio</span>
+        <a href="#" class="nav-item" data-tab="oportunidades">
+          <span class="nav-icon">🎯</span>
+          <span class="nav-text">Oportunidades</span>
         </a>
       </nav>
 
       <div class="sidebar-footer">
-        <p class="footer-text">Datos actualizados en tiempo real</p>
-        <div class="data-badge">
-          <span class="badge-dot"></span>
-          <span id="total-responses">0 respuestas</span>
+        <div class="data-status">
+          <div class="status-indicator"></div>
+          <span class="status-text" id="total-businesses">Cargando...</span>
         </div>
       </div>
     </aside>
@@ -54,135 +62,484 @@
     <main class="main-content">
       <!-- Header -->
       <header class="dashboard-header">
-        <div class="header-title-section">
-          <h2 class="page-title">Dashboard Ejecutivo</h2>
-          <div class="live-indicator">
-            <span class="live-dot"></span>
-            <span class="live-text">EN VIVO</span>
-          </div>
+        <div class="header-left">
+          <h1 class="dashboard-title">Diagnóstico Digital Parras</h1>
+          <p class="dashboard-subtitle">
+            Análisis de Madurez Digital y Oportunidades Tecnológicas
+          </p>
         </div>
-        <div class="header-upload">
-          <label for="csv-upload" class="upload-btn">
-            <span class="upload-icon">📁</span>
-            <span>Cargar CSV</span>
-            <input
-              type="file"
-              id="csv-upload"
-              accept=".csv"
-              style="display: none"
-            />
-          </label>
+        <div class="header-right">
+          <div class="filters-compact">
+            <select id="filter-type" class="filter-select">
+              <option value="all">Todas las industrias</option>
+            </select>
+            <select id="filter-size" class="filter-select">
+              <option value="all">Todos los tamaños</option>
+            </select>
+            <button id="apply-filters" class="btn-primary">Aplicar</button>
+            <button id="reset-filters" class="btn-secondary">Reset</button>
+          </div>
         </div>
       </header>
 
-      <!-- Zona de Filtros (Sticky) -->
-      <section class="filters-section">
-        <div class="filters-card">
-          <h3 class="filters-title">Filtros de Análisis</h3>
-          <div class="filters-grid">
-            <div class="filter-group">
-              <label for="filter-type">Tipo de Negocio</label>
-              <select id="filter-type" class="filter-select" multiple>
-                <option value="all" selected>Todos</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label for="filter-size">Tamaño del Negocio</label>
-              <select id="filter-size" class="filter-select" multiple>
-                <option value="all" selected>Todos</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label for="filter-role">Rol del Respondente</label>
-              <select id="filter-role" class="filter-select" multiple>
-                <option value="all" selected>Todos</option>
-              </select>
-            </div>
-            <div class="filter-actions">
-              <button id="apply-filters" class="btn-primary">
-                Aplicar Filtros
-              </button>
-              <button id="reset-filters" class="btn-secondary">Resetear</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- BLOQUE 1: Vista General (Diagnóstico Rápido) -->
-      <section id="overview-section" class="dashboard-section">
-        <h3 class="section-title">Vista General - Diagnóstico Rápido</h3>
-
-        <!-- Barras Comparativas -->
-        <div class="charts-row">
-          <div class="chart-card">
-            <h4 class="chart-title">
-              Nivel de Digitalización por Tipo de Negocio
-            </h4>
-            <canvas id="chart-digitalization"></canvas>
-          </div>
-          <div class="chart-card">
-            <h4 class="chart-title">Uso de Tecnología por Sector</h4>
-            <canvas id="chart-technology"></canvas>
-          </div>
-        </div>
-
-        <div class="charts-row">
-          <div class="chart-card">
-            <h4 class="chart-title">Control de Procesos por Tamaño</h4>
-            <canvas id="chart-processes"></canvas>
-          </div>
-          <div class="chart-card chart-card-large">
-            <h4 class="chart-title">
-              Tabla Resumen - Score Global por Tipo de Negocio
-            </h4>
-            <div id="summary-table" class="summary-table-container"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- BLOQUE 2: Visibilidad y Posicionamiento Digital -->
-      <section id="visibility-section" class="dashboard-section">
-        <h3 class="section-title">Visibilidad y Posicionamiento Digital</h3>
-
-        <div class="charts-row">
-          <div class="chart-card">
-            <h4 class="chart-title">¿Cómo Llegan los Clientes?</h4>
-            <canvas id="chart-client-origin"></canvas>
-          </div>
-          <div class="chart-card">
-            <h4 class="chart-title">Preparación para Búsquedas Digitales</h4>
-            <canvas id="chart-digital-readiness"></canvas>
-          </div>
-        </div>
-
-        <div class="message-card">
-          <div class="message-icon">🎯</div>
-          <p id="visibility-message" class="message-text">
-            La región depende fuertemente de la recomendación boca a boca, con
-            una gran oportunidad de posicionamiento digital conjunto.
+      <!-- Tab 1: Panorama General -->
+      <section id="tab-panorama" class="tab-content active">
+        <div class="section-header">
+          <h2 class="section-title">Panorama General</h2>
+          <p class="section-description">
+            Resumen ejecutivo de la madurez digital y preparación tecnológica
           </p>
         </div>
-      </section>
 
-      <!-- BLOQUE 3: Insights Accionables -->
-      <section id="insights-section" class="dashboard-section">
-        <h3 class="section-title">Insights Accionables</h3>
+        <!-- KPIs Globales -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon">📈</div>
+            <div class="kpi-content">
+              <span class="kpi-label">Madurez Digital</span>
+              <span class="kpi-value" id="kpi-digital-maturity">--</span>
+              <span class="kpi-trend" id="kpi-digital-trend"></span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon alert">⚠️</div>
+            <div class="kpi-content">
+              <span class="kpi-label">Riesgo Operativo</span>
+              <span class="kpi-value alert" id="kpi-operational-risk">--</span>
+              <span class="kpi-trend" id="kpi-risk-trend"></span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon success">🚀</div>
+            <div class="kpi-content">
+              <span class="kpi-label">Disposición Tech</span>
+              <span class="kpi-value success" id="kpi-tech-adoption">--</span>
+              <span class="kpi-trend" id="kpi-adoption-trend"></span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon">📊</div>
+            <div class="kpi-content">
+              <span class="kpi-label">Escalabilidad</span>
+              <span class="kpi-value" id="kpi-scalability">--</span>
+              <span class="kpi-trend" id="kpi-scalability-trend"></span>
+            </div>
+          </div>
+        </div>
 
-        <div class="insights-grid" id="insights-container">
-          <!-- Los insights se generarán dinámicamente -->
+        <!-- Gráficas Panorama -->
+        <div class="charts-grid">
+          <div class="chart-card span-2">
+            <div class="chart-header">
+              <h3 class="chart-title">Madurez Digital por Industria</h3>
+              <p class="chart-subtitle">
+                Promedio de score 0-100 por tipo de negocio
+              </p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-maturity-by-industry"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Distribución de Madurez</h3>
+              <p class="chart-subtitle">Nivel de digitalización 1-5</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-maturity-distribution"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card span-2">
+            <div class="chart-header">
+              <h3 class="chart-title">Comparativo de Scores por Tamaño</h3>
+              <p class="chart-subtitle">4 dimensiones clave</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-scores-by-size"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Herramientas Digitales</h3>
+              <p class="chart-subtitle">Adopción actual</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-tools-adoption"></canvas>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- BLOQUE 4: Detalle por Negocio -->
-      <section id="details-section" class="dashboard-section">
-        <h3 class="section-title">Detalle Individual por Negocio</h3>
+      <!-- Tab 2: Operación y Dolor -->
+      <section id="tab-operacion" class="tab-content">
+        <div class="section-header">
+          <h2 class="section-title">Operación y Dolor</h2>
+          <p class="section-description">
+            Identificación de problemas críticos y riesgos operativos
+          </p>
+        </div>
 
-        <div id="business-cards-container" class="business-cards-grid">
-          <!-- Las tarjetas de negocios se generarán dinámicamente -->
+        <!-- Alertas Críticas -->
+        <div class="alert-banner">
+          <span class="alert-icon">🚨</span>
+          <div class="alert-content">
+            <strong id="high-risk-count">0 negocios</strong> en alto riesgo
+            operativo (score ≥70)
+            <span class="alert-action">→ Requieren atención prioritaria</span>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card span-2">
+            <div class="chart-header">
+              <h3 class="chart-title">Ranking de Problemas Operativos</h3>
+              <p class="chart-subtitle">Frecuencia y severidad combinadas</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-problems-ranking"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Riesgo Operativo</h3>
+              <p class="chart-subtitle">Distribución de scores</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-operational-risk"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card span-2">
+            <div class="chart-header">
+              <h3 class="chart-title">Procesos Manuales vs Digitales</h3>
+              <p class="chart-subtitle">Por tamaño de negocio</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-processes-status"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Dependencia Tecnológica</h3>
+              <p class="chart-subtitle">Riesgo de salida del responsable TI</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-tech-dependency"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de Riesgos Críticos -->
+        <div class="table-card">
+          <div class="table-header">
+            <h3 class="table-title">Negocios en Alto Riesgo</h3>
+            <p class="table-subtitle">Score de riesgo operativo ≥ 70</p>
+          </div>
+          <div class="table-container" id="high-risk-table"></div>
+        </div>
+      </section>
+
+      <!-- Tab 3: Tecnología y Adopción -->
+      <section id="tab-tecnologia" class="tab-content">
+        <div class="section-header">
+          <h2 class="section-title">Tecnología y Adopción</h2>
+          <p class="section-description">
+            Capacidad y disposición para adoptar soluciones tecnológicas
+          </p>
+        </div>
+
+        <!-- Stats Rápidos -->
+        <div class="stats-row">
+          <div class="stat-box">
+            <span class="stat-number" id="stat-tech-ready">--</span>
+            <span class="stat-label">Listos para Tech</span>
+            <span class="stat-detail">Adoption ≥60</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number" id="stat-barriers">--</span>
+            <span class="stat-label">Barrera Principal</span>
+            <span class="stat-detail">Más reportada</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number" id="stat-google-ready">--</span>
+            <span class="stat-label">Preparados Google/IA</span>
+            <span class="stat-detail">Score ≥ Algo preparados</span>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Apertura Tecnológica</h3>
+              <p class="chart-subtitle">Disposición a probar herramientas</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-tech-openness"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Barreras Principales</h3>
+              <p class="chart-subtitle">Top obstáculos reportados</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-tech-barriers"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Capacidad de Aprendizaje</h3>
+              <p class="chart-subtitle">Equipo y personal</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-learning-capacity"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Preparación Google/ChatGPT</h3>
+              <p class="chart-subtitle">Visibilidad en búsquedas IA</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-google-readiness"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card span-2">
+            <div class="chart-header">
+              <h3 class="chart-title">Tech Adoption Score por Industria</h3>
+              <p class="chart-subtitle">Promedio de disposición tecnológica</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-adoption-by-industry"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 4: Decisiones y Datos -->
+      <section id="tab-decisiones" class="tab-content">
+        <div class="section-header">
+          <h2 class="section-title">Decisiones y Datos</h2>
+          <p class="section-description">
+            Nivel de data-driven decision making
+          </p>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card span-2">
+            <div class="chart-header">
+              <h3 class="chart-title">Uso de Información Digital</h3>
+              <p class="chart-subtitle">Para decisiones comerciales</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-data-usage"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Criterios de Decisión</h3>
+              <p class="chart-subtitle">Experiencia vs Datos</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-decision-criteria"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card span-2">
+            <div class="chart-header">
+              <h3 class="chart-title">Indicadores Utilizados</h3>
+              <p class="chart-subtitle">KPIs que manejan actualmente</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-kpis-used"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Seguimiento de Indicadores</h3>
+              <p class="chart-subtitle">Método de tracking</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-kpi-tracking"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Documentación de Procesos</h3>
+              <p class="chart-subtitle">Nivel de formalización</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-process-documentation"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Origen de Clientes</h3>
+              <p class="chart-subtitle">Canales de adquisición</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-client-origin"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 5: Oportunidades -->
+      <section id="tab-oportunidades" class="tab-content">
+        <div class="section-header">
+          <h2 class="section-title">Oportunidades y Recomendaciones</h2>
+          <p class="section-description">
+            Segmentación automática y estrategias sugeridas
+          </p>
+        </div>
+
+        <!-- Segmentación -->
+        <div class="segments-grid">
+          <div class="segment-card digital-leaders">
+            <div class="segment-header">
+              <span class="segment-icon">🏆</span>
+              <h3 class="segment-title">Digital Leaders</h3>
+            </div>
+            <div class="segment-stats">
+              <span class="segment-count" id="segment-leaders-count">0</span>
+              <span class="segment-label">negocios</span>
+            </div>
+            <div class="segment-criteria">
+              <span>Digital ≥70 + Adoption ≥70</span>
+            </div>
+            <div class="segment-action">
+              <strong>Acción:</strong> Casos de estudio, optimización avanzada
+            </div>
+          </div>
+
+          <div class="segment-card tech-ready">
+            <div class="segment-header">
+              <span class="segment-icon">⚡</span>
+              <h3 class="segment-title">Tech Ready</h3>
+            </div>
+            <div class="segment-stats">
+              <span class="segment-count" id="segment-ready-count">0</span>
+              <span class="segment-label">negocios</span>
+            </div>
+            <div class="segment-criteria">
+              <span>Digital <50 + Adoption ≥60</span>
+            </div>
+            <div class="segment-action">
+              <strong>Acción:</strong> ⭐ Quick wins, soluciones sencillas
+            </div>
+          </div>
+
+          <div class="segment-card high-risk">
+            <div class="segment-header">
+              <span class="segment-icon">🚨</span>
+              <h3 class="segment-title">High Risk</h3>
+            </div>
+            <div class="segment-stats">
+              <span class="segment-count" id="segment-risk-count">0</span>
+              <span class="segment-label">negocios</span>
+            </div>
+            <div class="segment-criteria">
+              <span>Risk ≥70</span>
+            </div>
+            <div class="segment-action">
+              <strong>Acción:</strong> Prioridad 1 - Automatización urgente
+            </div>
+          </div>
+
+          <div class="segment-card growth-potential">
+            <div class="segment-header">
+              <span class="segment-icon">📈</span>
+              <h3 class="segment-title">Growth Potential</h3>
+            </div>
+            <div class="segment-stats">
+              <span class="segment-count" id="segment-growth-count">0</span>
+              <span class="segment-label">negocios</span>
+            </div>
+            <div class="segment-criteria">
+              <span>Scalability ≥70</span>
+            </div>
+            <div class="segment-action">
+              <strong>Acción:</strong> Soluciones para expansión
+            </div>
+          </div>
+
+          <div class="segment-card traditional">
+            <div class="segment-header">
+              <span class="segment-icon">📚</span>
+              <h3 class="segment-title">Traditional</h3>
+            </div>
+            <div class="segment-stats">
+              <span class="segment-count" id="segment-traditional-count"
+                >0</span
+              >
+              <span class="segment-label">negocios</span>
+            </div>
+            <div class="segment-criteria">
+              <span>Resto</span>
+            </div>
+            <div class="segment-action">
+              <strong>Acción:</strong> Capacitación básica, casos locales
+            </div>
+          </div>
+        </div>
+
+        <!-- Recomendaciones Automáticas -->
+        <div class="recommendations-section">
+          <h3 class="recommendations-title">Recomendaciones Estratégicas</h3>
+          <div class="recommendations-grid" id="recommendations-container">
+            <!-- Se llena dinámicamente -->
+          </div>
+        </div>
+
+        <!-- Quick Wins vs Proyectos Estructurales -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Quick Wins Identificados</h3>
+              <p class="chart-subtitle">Oportunidades de impacto rápido</p>
+            </div>
+            <div class="quick-wins-list" id="quick-wins-list">
+              <!-- Se llena dinámicamente -->
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Proyectos Estructurales</h3>
+              <p class="chart-subtitle">Iniciativas de largo plazo</p>
+            </div>
+            <div class="structural-projects-list" id="structural-projects-list">
+              <!-- Se llena dinámicamente -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla Detallada de Negocios -->
+        <div class="table-card">
+          <div class="table-header">
+            <h3 class="table-title">Detalle de Negocios con Scores</h3>
+            <p class="table-subtitle">
+              Vista completa para análisis individual
+            </p>
+          </div>
+          <div class="table-container" id="businesses-detail-table"></div>
         </div>
       </section>
     </main>
 
-    <script src="app.js"></script>
+    <script src="app2.js"></script>
   </body>
 </html>
